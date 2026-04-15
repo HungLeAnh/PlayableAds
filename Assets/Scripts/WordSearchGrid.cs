@@ -12,6 +12,7 @@ public class WordSearchGrid : MonoBehaviour
     public Transform gridRoot;
     public TextMeshProUGUI wordListText;
     public GameObject ctaPanel; // Call To Action panel
+    public float gridPadding = 20f;
 
     private char[,] grid;
     private GridCell[,] cellObjects;
@@ -26,12 +27,19 @@ public class WordSearchGrid : MonoBehaviour
 
     void Awake()
     {
+    }
+
+    void Start()
+    {
         GenerateGrid();
         UpdateWordListUI();
     }
 
     void GenerateGrid()
     {
+        // Force UI layout to update to get correct dimensions
+        Canvas.ForceUpdateCanvases();
+        
         grid = new char[gridWidth, gridHeight];
         cellObjects = new GridCell[gridWidth, gridHeight];
 
@@ -44,7 +52,7 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // 2. Prepare and sort words (Longest words first are easier to pack)
+        // 2. Prepare and sort words
         List<string> sortedWords = new List<string>(wordsToFind);
         sortedWords.Sort((a, b) => b.Length.CompareTo(a.Length));
 
@@ -77,6 +85,10 @@ public class WordSearchGrid : MonoBehaviour
         {
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayout.constraintCount = gridWidth;
+
+            // Force layout rebuild
+            RectTransform rectTransform = gridRoot.GetComponent<RectTransform>();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
         }
 
         for (int y = 0; y < gridHeight; y++)
@@ -99,8 +111,8 @@ public class WordSearchGrid : MonoBehaviour
     void PlaceWord(string word)
     {
         List<Placement> possiblePlacements = new List<Placement>();
+        int maxOverlap = -1;
 
-        // Systematically check every possible position and direction
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -110,10 +122,19 @@ public class WordSearchGrid : MonoBehaviour
                     for (int dy = -1; dy <= 1; dy++)
                     {
                         if (dx == 0 && dy == 0) continue;
-
-                        if (CanPlaceWord(word, x, y, dx, dy))
+                        int overlap = GetOverlapScore(word, x, y, dx, dy);
+                        if (overlap != -1)
                         {
-                            possiblePlacements.Add(new Placement { x = x, y = y, dx = dx, dy = dy });
+                            if (overlap > maxOverlap)
+                            {
+                                maxOverlap = overlap;
+                                possiblePlacements.Clear();
+                                possiblePlacements.Add(new Placement { x = x, y = y, dx = dx, dy = dy });
+                            }
+                            else if (overlap == maxOverlap)
+                            {
+                                possiblePlacements.Add(new Placement { x = x, y = y, dx = dx, dy = dy });
+                            }
                         }
                     }
                 }
@@ -122,31 +143,27 @@ public class WordSearchGrid : MonoBehaviour
 
         if (possiblePlacements.Count > 0)
         {
-            // Pick a random valid placement from the discovered list
             Placement p = possiblePlacements[Random.Range(0, possiblePlacements.Count)];
             for (int i = 0; i < word.Length; i++)
             {
                 grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
             }
-            Debug.Log($"Placed {word} at ({p.x},{p.y}) direction ({p.dx},{p.dy})");
-        }
-        else
-        {
-            Debug.LogError($"CRITICAL: No possible placement found for word: {word}. The grid might be too small or too crowded.");
         }
     }
 
-    bool CanPlaceWord(string word, int x, int y, int dx, int dy)
+    int GetOverlapScore(string word, int x, int y, int dx, int dy)
     {
+        int score = 0;
         for (int i = 0; i < word.Length; i++)
         {
             int nx = x + i * dx;
             int ny = y + i * dy;
-
-            if (nx < 0 || nx >= gridWidth || ny < 0 || ny >= gridHeight) return false;
-            if (grid[nx, ny] != ' ' && grid[nx, ny] != word[i]) return false;
+            if (nx < 0 || nx >= gridWidth || ny < 0 || ny >= gridHeight) return -1;
+            char existingChar = grid[nx, ny];
+            if (existingChar != ' ' && existingChar != word[i]) return -1;
+            if (existingChar == word[i]) score++;
         }
-        return true;
+        return score;
     }
 
     public void OnWordFound(string word)
