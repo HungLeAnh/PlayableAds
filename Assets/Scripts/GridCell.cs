@@ -37,5 +37,32 @@ public class GridCell : MonoBehaviour
     {
         isFound = true;
         background.color = color;
+        StartCoroutine(PopEffect());
+    }
+
+    private System.Collections.IEnumerator PopEffect()
+    {
+        Vector3 originalScale = transform.localScale;
+        Vector3 targetScale = originalScale * 1.15f;
+        
+        float duration = 0.1f;
+        float elapsed = 0;
+        
+        while (elapsed < duration)
+        {
+            transform.localScale = Vector3.Lerp(originalScale, targetScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        elapsed = 0;
+        while (elapsed < duration)
+        {
+            transform.localScale = Vector3.Lerp(targetScale, originalScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        transform.localScale = originalScale;
     }
 }
