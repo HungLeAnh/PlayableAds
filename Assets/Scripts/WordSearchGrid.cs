@@ -19,11 +19,12 @@ public class WordSearchGrid : MonoBehaviour
 
     public GridCell GetCellAt(int row, int col)
     {
+        if (cellObjects == null) return null;
         if (col < 0 || col >= gridWidth || row < 0 || row >= gridHeight) return null;
         return cellObjects[col, row];
     }
 
-    void Start()
+    void Awake()
     {
         GenerateGrid();
         UpdateWordListUI();

@@ -41,9 +41,8 @@ public class WordSearchInput : MonoBehaviour
     void ContinueSelection()
     {
         GridCell cell = GetCellUnderMouse();
-        if (cell != null && cell != startCell && !selectedCells.Contains(cell))
+        if (cell != null && cell != (selectedCells.Count > 0 ? selectedCells[selectedCells.Count - 1] : null))
         {
-            // Logic to restrict selection to a straight line
             if (IsValidSelection(cell))
             {
                 UpdateSelection(cell);
@@ -53,34 +52,37 @@ public class WordSearchInput : MonoBehaviour
 
     bool IsValidSelection(GridCell currentCell)
     {
-        int dx = currentCell.col - startCell.col;
-        int dy = currentCell.row - startCell.row;
+        if (startCell == null || currentCell == null) return false;
+        int dx = Mathf.Abs(currentCell.col - startCell.col);
+        int dy = Mathf.Abs(currentCell.row - startCell.row);
 
-        // Check if horizontal, vertical, or diagonal (45 degrees)
-        return dx == 0 || dy == 0 || Mathf.Abs(dx) == Mathf.Abs(dy);
+        return dx == 0 || dy == 0 || dx == dy;
     }
 
     void UpdateSelection(GridCell currentCell)
     {
+        if (gridManager == null) return;
+
         ClearSelectionVisuals();
         selectedCells.Clear();
 
-        int dx = Mathf.Clamp(currentCell.col - startCell.col, -1, 1);
-        int dy = Mathf.Clamp(currentCell.row - startCell.row, -1, 1);
+        int colDist = currentCell.col - startCell.col;
+        int rowDist = currentCell.row - startCell.row;
         
-        int steps = Mathf.Max(Mathf.Abs(currentCell.col - startCell.col), Mathf.Abs(currentCell.row - startCell.row));
+        int steps = Mathf.Max(Mathf.Abs(colDist), Mathf.Abs(rowDist));
+        int dx = colDist == 0 ? 0 : colDist / Mathf.Abs(colDist);
+        int dy = rowDist == 0 ? 0 : rowDist / Mathf.Abs(rowDist);
 
         for (int i = 0; i <= steps; i++)
         {
-            int x = startCell.col + i * dx;
-            int y = startCell.row + i * dy;
+            int c = startCell.col + i * dx;
+            int r = startCell.row + i * dy;
             
-            // This is a bit tricky since we need to find the cell by coordinates.
-            // I'll update WordSearchGrid to provide a way to get cell by row/col.
-            GridCell cell = GetCellAt(y, x);
+            GridCell cell = gridManager.GetCellAt(r, c);
             if (cell != null)
             {
-                AddCell(cell);
+                selectedCells.Add(cell);
+                cell.SetSelected(true);
             }
         }
     }
@@ -152,7 +154,7 @@ public class WordSearchInput : MonoBehaviour
 
         foreach (var result in results)
         {
-            GridCell cell = result.gameObject.GetComponent<GridCell>();
+            GridCell cell = result.gameObject.GetComponentInParent<GridCell>();
             if (cell != null) return cell;
         }
         return null;
