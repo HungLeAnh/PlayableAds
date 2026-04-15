@@ -103,7 +103,13 @@ public class WordSearchGrid : MonoBehaviour
                     grid[startX + i * dirX, startY + i * dirY] = word[i];
                 }
                 placed = true;
+                Debug.Log($"Placed {word} at ({startX},{startY}) direction ({dirX},{dirY})");
             }
+        }
+
+        if (!placed)
+        {
+            Debug.LogWarning($"Failed to place word: {word} after {attempts} attempts.");
         }
     }
 

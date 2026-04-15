@@ -404,8 +404,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0a46fb707e4a64aad7e3508d4233cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 10
-  gridHeight: 10
+  gridWidth: 8
+  gridHeight: 8
   wordsToFind:
   - LUNA
   - PLAYABLE

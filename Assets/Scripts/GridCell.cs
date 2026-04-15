@@ -33,9 +33,9 @@ public class GridCell : MonoBehaviour
         background.color = selected ? Color.yellow : Color.white;
     }
 
-    public void SetFound()
+    public void SetFound(Color color)
     {
         isFound = true;
-        background.color = Color.green;
+        background.color = color;
     }
 }

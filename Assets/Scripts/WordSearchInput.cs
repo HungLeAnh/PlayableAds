@@ -119,12 +119,14 @@ public class WordSearchInput : MonoBehaviour
 
         if (gridManager.wordsToFind.Contains(word))
         {
-            foreach (var cell in selectedCells) cell.SetFound();
+            Color randomColor = GetRandomColor();
+            foreach (var cell in selectedCells) cell.SetFound(randomColor);
             gridManager.OnWordFound(word);
         }
         else if (gridManager.wordsToFind.Contains(reversedWord))
         {
-             foreach (var cell in selectedCells) cell.SetFound();
+             Color randomColor = GetRandomColor();
+             foreach (var cell in selectedCells) cell.SetFound(randomColor);
              gridManager.OnWordFound(reversedWord);
         }
         else
@@ -133,6 +135,12 @@ public class WordSearchInput : MonoBehaviour
         }
         
         selectedCells.Clear();
+    }
+
+    Color GetRandomColor()
+    {
+        // Generate a vibrant random color
+        return Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.7f, 1f);
     }
 
     string ReverseString(string s)
