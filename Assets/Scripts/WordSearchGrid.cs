@@ -44,10 +44,19 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // 2. Place words
-        foreach (string word in wordsToFind)
+        // 2. Prepare and sort words (Longest words first are easier to pack)
+        List<string> sortedWords = new List<string>(wordsToFind);
+        sortedWords.Sort((a, b) => b.Length.CompareTo(a.Length));
+
+        foreach (string word in sortedWords)
         {
-            PlaceWord(word.ToUpper());
+            string upperWord = word.ToUpper().Replace(" ", "");
+            if (upperWord.Length > Mathf.Max(gridWidth, gridHeight))
+            {
+                Debug.LogError($"Word {upperWord} is too long for the grid!");
+                continue;
+            }
+            PlaceWord(upperWord);
         }
 
         // 3. Fill empty spots with random letters
@@ -66,6 +75,7 @@ public class WordSearchGrid : MonoBehaviour
         GridLayoutGroup gridLayout = gridRoot.GetComponent<GridLayoutGroup>();
         if (gridLayout != null)
         {
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayout.constraintCount = gridWidth;
         }
 
@@ -81,35 +91,48 @@ public class WordSearchGrid : MonoBehaviour
         }
     }
 
+    private struct Placement
+    {
+        public int x, y, dx, dy;
+    }
+
     void PlaceWord(string word)
     {
-        int attempts = 0;
-        bool placed = false;
+        List<Placement> possiblePlacements = new List<Placement>();
 
-        while (!placed && attempts < 100)
+        // Systematically check every possible position and direction
+        for (int x = 0; x < gridWidth; x++)
         {
-            attempts++;
-            int startX = Random.Range(0, gridWidth);
-            int startY = Random.Range(0, gridHeight);
-            int dirX = Random.Range(-1, 2);
-            int dirY = Random.Range(-1, 2);
-
-            if (dirX == 0 && dirY == 0) continue;
-
-            if (CanPlaceWord(word, startX, startY, dirX, dirY))
+            for (int y = 0; y < gridHeight; y++)
             {
-                for (int i = 0; i < word.Length; i++)
+                for (int dx = -1; dx <= 1; dx++)
                 {
-                    grid[startX + i * dirX, startY + i * dirY] = word[i];
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        if (dx == 0 && dy == 0) continue;
+
+                        if (CanPlaceWord(word, x, y, dx, dy))
+                        {
+                            possiblePlacements.Add(new Placement { x = x, y = y, dx = dx, dy = dy });
+                        }
+                    }
                 }
-                placed = true;
-                Debug.Log($"Placed {word} at ({startX},{startY}) direction ({dirX},{dirY})");
             }
         }
 
-        if (!placed)
+        if (possiblePlacements.Count > 0)
         {
-            Debug.LogWarning($"Failed to place word: {word} after {attempts} attempts.");
+            // Pick a random valid placement from the discovered list
+            Placement p = possiblePlacements[Random.Range(0, possiblePlacements.Count)];
+            for (int i = 0; i < word.Length; i++)
+            {
+                grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
+            }
+            Debug.Log($"Placed {word} at ({p.x},{p.y}) direction ({p.dx},{p.dy})");
+        }
+        else
+        {
+            Debug.LogError($"CRITICAL: No possible placement found for word: {word}. The grid might be too small or too crowded.");
         }
     }
 
@@ -138,7 +161,7 @@ public class WordSearchGrid : MonoBehaviour
 
     void UpdateWordListUI()
     {
-        string text = "Words to find:\n";
+        string text = "";
         foreach (string word in wordsToFind)
         {
             if (foundWords.Contains(word))
