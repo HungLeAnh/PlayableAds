@@ -5,7 +5,6 @@ using TMPro;
 public class GridCell : MonoBehaviour
 {
     public TextMeshProUGUI letterText;
-    public Image background;
     
     public int row;
     public int col;
@@ -24,19 +23,16 @@ public class GridCell : MonoBehaviour
     public void ResetCell()
     {
         isFound = false;
-        background.color = Color.white;
     }
 
     public void SetSelected(bool selected)
     {
         if (isFound) return;
-        background.color = selected ? Color.yellow : Color.white;
     }
 
-    public void SetFound(Color color)
+    public void SetFound()
     {
         isFound = true;
-        background.color = color;
         StartCoroutine(PopEffect());
     }
 

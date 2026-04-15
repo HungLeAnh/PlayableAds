@@ -85,7 +85,7 @@ public class WordSearchInput : MonoBehaviour
             Color randomColor = GetRandomColor();
             randomColor.a = 0.6f; // Semi-transparent for the line
 
-            foreach (var cell in selectedCells) cell.SetFound(randomColor);
+            foreach (var cell in selectedCells) cell.SetFound();
             
             // Finalize the line
             if (currentLine != null)
