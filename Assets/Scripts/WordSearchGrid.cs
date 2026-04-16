@@ -17,6 +17,7 @@ public class WordSearchGrid : MonoBehaviour
     private char[,] grid;
     private GridCell[,] cellObjects;
     private List<string> foundWords = new List<string>();
+    private Dictionary<string, Placement> wordPlacements = new Dictionary<string, Placement>();
 
     public GridCell GetCellAt(int row, int col)
     {
@@ -87,6 +88,7 @@ public class WordSearchGrid : MonoBehaviour
     bool TryGenerateGrid()
     {
         grid = new char[gridWidth, gridHeight];
+        wordPlacements.Clear();
 
         // 1. Initialize empty grid
         for (int x = 0; x < gridWidth; x++)
@@ -176,11 +178,42 @@ public class WordSearchGrid : MonoBehaviour
             {
                 grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
             }
+            wordPlacements[word] = p; // Store the placement
             Debug.Log($"[WordSearch] Placed '{word}' at (col: {p.x}, row: {p.y}) direction: ({p.dx}, {p.dy})");
             return true;
         }
         
         return false;
+    }
+
+    public void HighlightRandomWord()
+    {
+        List<string> remainingWords = new List<string>();
+        foreach (var word in wordsToFind)
+        {
+            if (!foundWords.Contains(word.ToUpper().Replace(" ", "")))
+            {
+                remainingWords.Add(word.ToUpper().Replace(" ", ""));
+            }
+        }
+
+        if (remainingWords.Count > 0)
+        {
+            string wordToHighlight = remainingWords[Random.Range(0, remainingWords.Count)];
+            if (wordPlacements.ContainsKey(wordToHighlight))
+            {
+                Placement p = wordPlacements[wordToHighlight];
+                for (int i = 0; i < wordToHighlight.Length; i++)
+                {
+                    GridCell cell = GetCellAt(p.y + i * p.dy, p.x + i * p.dx);
+                    if (cell != null)
+                    {
+                        cell.SetFound(); // Using SetFound() as a highlight effect (triggers pop)
+                    }
+                }
+                Debug.Log($"[WordSearch] Highlighted word: {wordToHighlight}");
+            }
+        }
     }
 
     int GetOverlapScore(string word, int x, int y, int dx, int dy)
