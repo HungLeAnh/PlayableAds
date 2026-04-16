@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     
     public WordSearchGrid grid;
+    public bool useTimer = true;
     public float gameDuration = 60f;
     public TextMeshProUGUI timerText;
     public GameObject gameOverPanel;
@@ -21,13 +22,17 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        timeRemaining = gameDuration;
+        if (useTimer)
+        {
+            timeRemaining = gameDuration;
+        }
+        UpdateTimerUI();
         LifeCycle.GameStarted();
     }
 
     void Update()
     {
-        if (!isGameActive) return;
+        if (!isGameActive || !useTimer) return;
 
         timeRemaining -= Time.deltaTime;
         UpdateTimerUI();
@@ -42,8 +47,15 @@ public class GameManager : MonoBehaviour
     {
         if (timerText != null)
         {
-            int seconds = Mathf.Max(0, Mathf.FloorToInt(timeRemaining));
-            timerText.text = $"Time: {seconds}s";
+            if (useTimer)
+            {
+                int seconds = Mathf.Max(0, Mathf.FloorToInt(timeRemaining));
+                timerText.text = $"Time: {seconds}s";
+            }
+            else
+            {
+                timerText.text = "Unlimited Mode";
+            }
         }
     }
 
