@@ -40,8 +40,53 @@ public class WordSearchGrid : MonoBehaviour
         // Force UI layout to update to get correct dimensions
         Canvas.ForceUpdateCanvases();
         
-        grid = new char[gridWidth, gridHeight];
+        int maxRetries = 100;
+        int currentRetry = 0;
+        bool allWordsPlaced = false;
+
+        while (!allWordsPlaced && currentRetry < maxRetries)
+        {
+            currentRetry++;
+            allWordsPlaced = TryGenerateGrid();
+        }
+
+        if (!allWordsPlaced)
+        {
+            Debug.LogError($"[WordSearch] Failed to generate a valid grid after {maxRetries} retries!");
+        }
+        else
+        {
+            Debug.Log($"[WordSearch] Grid generated successfully in {currentRetry} attempts.");
+        }
+
+        // 4. Instantiate grid cells
+        GridLayoutGroup gridLayout = gridRoot.GetComponent<GridLayoutGroup>();
+        if (gridLayout != null)
+        {
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gridLayout.constraintCount = gridWidth;
+
+            // Force layout rebuild
+            RectTransform rectTransform = gridRoot.GetComponent<RectTransform>();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        }
+
         cellObjects = new GridCell[gridWidth, gridHeight];
+        for (int y = 0; y < gridHeight; y++)
+        {
+            for (int x = 0; x < gridWidth; x++)
+            {
+                GameObject cellObj = Instantiate(cellPrefab, gridRoot);
+                GridCell cell = cellObj.GetComponent<GridCell>();
+                cell.SetLetter(grid[x, y], y, x);
+                cellObjects[x, y] = cell;
+            }
+        }
+    }
+
+    bool TryGenerateGrid()
+    {
+        grid = new char[gridWidth, gridHeight];
 
         // 1. Initialize empty grid
         for (int x = 0; x < gridWidth; x++)
@@ -64,7 +109,11 @@ public class WordSearchGrid : MonoBehaviour
                 Debug.LogError($"Word {upperWord} is too long for the grid!");
                 continue;
             }
-            PlaceWord(upperWord);
+            
+            if (!PlaceWord(upperWord))
+            {
+                return false; // Failed to place a word, triggers a retry
+            }
         }
 
         // 3. Fill empty spots with random letters
@@ -79,28 +128,7 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // 4. Instantiate grid cells
-        GridLayoutGroup gridLayout = gridRoot.GetComponent<GridLayoutGroup>();
-        if (gridLayout != null)
-        {
-            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            gridLayout.constraintCount = gridWidth;
-
-            // Force layout rebuild
-            RectTransform rectTransform = gridRoot.GetComponent<RectTransform>();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
-        }
-
-        for (int y = 0; y < gridHeight; y++)
-        {
-            for (int x = 0; x < gridWidth; x++)
-            {
-                GameObject cellObj = Instantiate(cellPrefab, gridRoot);
-                GridCell cell = cellObj.GetComponent<GridCell>();
-                cell.SetLetter(grid[x, y], y, x);
-                cellObjects[x, y] = cell;
-            }
-        }
+        return true;
     }
 
     private struct Placement
@@ -108,7 +136,7 @@ public class WordSearchGrid : MonoBehaviour
         public int x, y, dx, dy;
     }
 
-    void PlaceWord(string word)
+    bool PlaceWord(string word)
     {
         List<Placement> possiblePlacements = new List<Placement>();
         int maxOverlap = -1;
@@ -148,7 +176,11 @@ public class WordSearchGrid : MonoBehaviour
             {
                 grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
             }
+            Debug.Log($"[WordSearch] Placed '{word}' at (col: {p.x}, row: {p.y}) direction: ({p.dx}, {p.dy})");
+            return true;
         }
+        
+        return false;
     }
 
     int GetOverlapScore(string word, int x, int y, int dx, int dy)
