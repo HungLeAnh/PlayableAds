@@ -1,11 +1,18 @@
 using UnityEngine;
 using Luna.Unity;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     
     public WordSearchGrid grid;
+    public float gameDuration = 60f;
+    public TextMeshProUGUI timerText;
+    public GameObject gameOverPanel;
+    
+    private float timeRemaining;
+    private bool isGameActive = true;
     
     void Awake()
     {
@@ -14,12 +21,44 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        timeRemaining = gameDuration;
         LifeCycle.GameStarted();
+    }
+
+    void Update()
+    {
+        if (!isGameActive) return;
+
+        timeRemaining -= Time.deltaTime;
+        UpdateTimerUI();
+
+        if (timeRemaining <= 0)
+        {
+            OnGameLose();
+        }
+    }
+
+    void UpdateTimerUI()
+    {
+        if (timerText != null)
+        {
+            int seconds = Mathf.Max(0, Mathf.FloorToInt(timeRemaining));
+            timerText.text = $"Time: {seconds}s";
+        }
     }
 
     public void OnGameComplete()
     {
+        isGameActive = false;
         LifeCycle.GameEnded();
         Debug.Log("Game Complete!");
+    }
+
+    void OnGameLose()
+    {
+        isGameActive = false;
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+        LifeCycle.GameEnded();
+        Debug.Log("Game Over - Time Out!");
     }
 }
