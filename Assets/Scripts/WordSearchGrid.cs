@@ -237,6 +237,14 @@ public class WordSearchGrid : MonoBehaviour
         {
             foundWords.Add(word);
             UpdateWordListUI();
+            
+            // Update progress: ratio of found words to total words
+            if (GameManager.Instance != null)
+            {
+                float progress = (float)foundWords.Count / wordsToFind.Count;
+                GameManager.Instance.UpdateProgress(progress);
+            }
+            
             CheckWinCondition();
         }
     }

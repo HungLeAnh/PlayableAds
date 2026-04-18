@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Luna.Unity;
 using TMPro;
 
@@ -10,6 +11,7 @@ public class GameManager : MonoBehaviour
     public bool useTimer = true;
     public float gameDuration = 60f;
     public TextMeshProUGUI timerText;
+    public Slider progressSlider;
     public GameObject gameOverPanel;
     
     private float timeRemaining;
@@ -27,6 +29,7 @@ public class GameManager : MonoBehaviour
             timeRemaining = gameDuration;
         }
         UpdateTimerUI();
+        UpdateProgress(0);
         LifeCycle.GameStarted();
     }
 
@@ -56,6 +59,14 @@ public class GameManager : MonoBehaviour
             {
                 timerText.text = "Unlimited Mode";
             }
+        }
+    }
+
+    public void UpdateProgress(float progress)
+    {
+        if (progressSlider != null)
+        {
+            progressSlider.value = Mathf.Clamp01(progress);
         }
     }
 
