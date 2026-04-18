@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
             if (useTimer)
             {
                 int seconds = Mathf.Max(0, Mathf.FloorToInt(timeRemaining));
-                timerText.text = $"Time: {seconds}s";
+                timerText.text = $"{seconds}";
             }
             else
             {
