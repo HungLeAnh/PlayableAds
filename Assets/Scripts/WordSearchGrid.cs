@@ -203,15 +203,33 @@ public class WordSearchGrid : MonoBehaviour
             if (wordPlacements.ContainsKey(wordToHighlight))
             {
                 Placement p = wordPlacements[wordToHighlight];
+                GridCell firstCell = null;
+                GridCell lastCell = null;
+
                 for (int i = 0; i < wordToHighlight.Length; i++)
                 {
                     GridCell cell = GetCellAt(p.y + i * p.dy, p.x + i * p.dx);
                     if (cell != null)
                     {
-                        cell.SetFound(); // Using SetFound() as a highlight effect (triggers pop)
+                        cell.SetFound();
+                        if (i == 0) firstCell = cell;
+                        if (i == wordToHighlight.Length - 1) lastCell = cell;
                     }
                 }
-                Debug.Log($"[WordSearch] Highlighted word: {wordToHighlight}");
+                
+                // Draw selection line
+                if (firstCell != null && lastCell != null)
+                {
+                    WordSearchInput inputManager = FindObjectOfType<WordSearchInput>();
+                    if (inputManager != null)
+                    {
+                        inputManager.CreatePermanentLine(firstCell, lastCell);
+                    }
+                }
+
+                // Also mark as found in the logic
+                OnWordFound(wordToHighlight);
+                Debug.Log($"[WordSearch] Hint found word: {wordToHighlight}");
             }
         }
     }

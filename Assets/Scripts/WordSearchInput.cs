@@ -142,6 +142,18 @@ public class WordSearchInput : MonoBehaviour
         selectedCells.Clear();
     }
 
+    public void CreatePermanentLine(GridCell start, GridCell end)
+    {
+        if (linePrefab == null || lineRoot == null) return;
+        
+        GameObject lineObj = Instantiate(linePrefab, lineRoot);
+        SelectionLine line = lineObj.GetComponent<SelectionLine>();
+        Color randomColor = GetRandomColor();
+        randomColor.a = 0.6f;
+        
+        line.SetLine(start.transform.position, end.transform.position, lineWidth, randomColor);
+    }
+
     Color GetRandomColor()
     {
         // Generate a vibrant random color
