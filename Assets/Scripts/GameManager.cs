@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public Slider progressSlider;
     public GameObject gameOverPanel;
+    public Image vignetteImage;
+    public float vignettePulseSpeed = 4f;
     
     private float timeRemaining;
     public bool isGameActive = true;
@@ -31,6 +33,12 @@ public class GameManager : MonoBehaviour
         UpdateTimerUI();
         UpdateProgress(0);
         LifeCycle.GameStarted();
+        
+        if (vignetteImage != null)
+        {
+            vignetteImage.gameObject.SetActive(false);
+            vignetteImage.raycastTarget = false; // Ensure it doesn't block input
+        }
     }
 
     void Update()
@@ -39,10 +47,31 @@ public class GameManager : MonoBehaviour
 
         timeRemaining -= Time.deltaTime;
         UpdateTimerUI();
+        UpdateVignette();
 
         if (timeRemaining <= 0)
         {
             OnGameLose();
+        }
+    }
+
+    void UpdateVignette()
+    {
+        if (vignetteImage == null) return;
+
+        // Changed threshold to 6 seconds as requested
+        if (timeRemaining <= 6f && timeRemaining > 0)
+        {
+            if (!vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(true);
+            
+            // Pulse at constant speed (removed speedMultiplier)
+            float alpha = (Mathf.Sin(Time.time * vignettePulseSpeed) + 1f) / 2f;
+            alpha *= 0.6f; // Max alpha 0.6
+            vignetteImage.color = new Color(1, 0, 0, alpha);
+        }
+        else
+        {
+            if (vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(false);
         }
     }
 
@@ -73,6 +102,7 @@ public class GameManager : MonoBehaviour
     public void OnGameComplete()
     {
         isGameActive = false;
+        if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
         LifeCycle.GameEnded();
         Debug.Log("Game Complete!");
     }
@@ -80,6 +110,7 @@ public class GameManager : MonoBehaviour
     void OnGameLose()
     {
         isGameActive = false;
+        if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
         LifeCycle.GameEnded();
         Debug.Log("Game Over - Time Out!");
