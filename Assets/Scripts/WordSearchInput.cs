@@ -1,7 +1,8 @@
-using UnityEngine;
-using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class WordSearchInput : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class WordSearchInput : MonoBehaviour
     private GridCell startCell;
     private SelectionLine currentLine;
 
-    void Update()
+    private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -65,6 +66,7 @@ public class WordSearchInput : MonoBehaviour
         if (currentLine != null)
         {
             currentLine.SetLine(startCell.transform.position, endCell.transform.position, lineWidth, new Color(1, 1, 0, 0.5f));
+            LayoutRebuilder.ForceRebuildLayoutImmediate(currentLine.gameObject.transform as RectTransform);
         }
     }
 
@@ -91,8 +93,10 @@ public class WordSearchInput : MonoBehaviour
             if (currentLine != null)
             {
                 currentLine.SetLine(startCell.transform.position, selectedCells[selectedCells.Count-1].transform.position, lineWidth, randomColor);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(currentLine.gameObject.transform as RectTransform);
+
             }
-            
+
             gridManager.OnWordFound(finalWord);
             found = true;
         }
@@ -110,7 +114,11 @@ public class WordSearchInput : MonoBehaviour
     Color GetRandomColor()
     {
         // Generate a vibrant random color
-        return Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.7f, 1f);
+        float h = UnityEngine.Random.Range(0f, 1f);   // Hue (0-1)
+        float s = UnityEngine.Random.Range(0.5f, 1f); // Saturation (0.5-1)
+        float v = UnityEngine.Random.Range(0.7f, 1f); // Value/Brightness (0.7-1)
+
+        return Color.HSVToRGB(h, s, v);
     }
 
     string ReverseString(string s)
