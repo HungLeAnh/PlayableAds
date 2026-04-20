@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverPanel;
     
     private float timeRemaining;
-    private bool isGameActive = true;
+    public bool isGameActive = true;
     
     void Awake()
     {

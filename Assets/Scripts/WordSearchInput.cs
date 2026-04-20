@@ -18,23 +18,50 @@ public class WordSearchInput : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (GameManager.Instance != null && !GameManager.Instance.isGameActive)
         {
-            StartSelection();
+            if (isSelecting) EndSelection();
+            return;
         }
-        else if (Input.GetMouseButton(0) && isSelecting)
+
+        if (Input.touchCount > 0)
         {
-            ContinueSelection();
+            Touch touch = Input.GetTouch(0);
+            Vector2 touchPos = touch.position;
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                StartSelection(touchPos);
+            }
+            else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+            {
+                if (isSelecting) ContinueSelection(touchPos);
+            }
+            else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                if (isSelecting) EndSelection();
+            }
         }
-        else if (Input.GetMouseButtonUp(0) && isSelecting)
+        else
         {
-            EndSelection();
+            if (Input.GetMouseButtonDown(0))
+            {
+                StartSelection(Input.mousePosition);
+            }
+            else if (Input.GetMouseButton(0) && isSelecting)
+            {
+                ContinueSelection(Input.mousePosition);
+            }
+            else if (Input.GetMouseButtonUp(0) && isSelecting)
+            {
+                EndSelection();
+            }
         }
     }
 
-    void StartSelection()
+    void StartSelection(Vector2 position)
     {
-        GridCell cell = GetCellUnderMouse();
+        GridCell cell = GetCellAtPosition(position);
         if (cell != null)
         {
             isSelecting = true;
@@ -48,9 +75,9 @@ public class WordSearchInput : MonoBehaviour
         }
     }
 
-    void ContinueSelection()
+    void ContinueSelection(Vector2 position)
     {
-        GridCell cell = GetCellUnderMouse();
+        GridCell cell = GetCellAtPosition(position);
         if (cell != null)
         {
             if (IsValidSelection(cell))
@@ -66,7 +93,6 @@ public class WordSearchInput : MonoBehaviour
         if (currentLine != null)
         {
             currentLine.SetLine(startCell.transform.position, endCell.transform.position, lineWidth, new Color(1, 1, 0, 0.5f));
-            LayoutRebuilder.ForceRebuildLayoutImmediate(currentLine.gameObject.transform as RectTransform);
         }
     }
 
@@ -74,6 +100,13 @@ public class WordSearchInput : MonoBehaviour
     {
         isSelecting = false;
         
+        if (selectedCells.Count == 0)
+        {
+            if (currentLine != null) Destroy(currentLine.gameObject);
+            currentLine = null;
+            return;
+        }
+
         StringBuilder sb = new StringBuilder();
         foreach (var cell in selectedCells) sb.Append(cell.letter);
 
@@ -93,8 +126,6 @@ public class WordSearchInput : MonoBehaviour
             if (currentLine != null)
             {
                 currentLine.SetLine(startCell.transform.position, selectedCells[selectedCells.Count-1].transform.position, lineWidth, randomColor);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(currentLine.gameObject.transform as RectTransform);
-
             }
 
             gridManager.OnWordFound(finalWord);
@@ -128,11 +159,13 @@ public class WordSearchInput : MonoBehaviour
         return new string(charArray);
     }
 
-    GridCell GetCellUnderMouse()
+    GridCell GetCellAtPosition(Vector2 position)
     {
+        if (EventSystem.current == null) return null;
+
         PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
-            position = Input.mousePosition
+            position = position
         };
 
         List<RaycastResult> results = new List<RaycastResult>();
