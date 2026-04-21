@@ -13,10 +13,12 @@ public class WordSearchGrid : MonoBehaviour
     public TextMeshProUGUI wordListText;
     public GameObject ctaPanel; // Call To Action panel
     public float gridPadding = 20f;
+    public Button hintButton;
+    public WordSearchInput inputManager;
 
     private char[,] grid;
     private GridCell[,] cellObjects;
-    private List<string> foundWords = new List<string>();
+    private List<string> foundWords = new List<string>(); // Stores the original word from wordsToFind
     private Dictionary<string, Placement> wordPlacements = new Dictionary<string, Placement>();
 
     public GridCell GetCellAt(int row, int col)
@@ -28,10 +30,15 @@ public class WordSearchGrid : MonoBehaviour
 
     void Awake()
     {
+        if (inputManager == null)
+            inputManager = FindObjectOfType<WordSearchInput>();
     }
 
     void Start()
     {
+        if (hintButton != null)
+            hintButton.onClick.AddListener(HighlightRandomWord);
+        
         GenerateGrid();
         UpdateWordListUI();
     }
@@ -188,50 +195,64 @@ public class WordSearchGrid : MonoBehaviour
 
     public void HighlightRandomWord()
     {
+        if (GameManager.Instance != null && !GameManager.Instance.isGameActive) return;
+
         List<string> remainingWords = new List<string>();
         foreach (var word in wordsToFind)
         {
-            if (!foundWords.Contains(word.ToUpper().Replace(" ", "")))
+            if (!IsWordFound(word))
             {
-                remainingWords.Add(word.ToUpper().Replace(" ", ""));
+                remainingWords.Add(word);
             }
         }
 
         if (remainingWords.Count > 0)
         {
-            string wordToHighlight = remainingWords[Random.Range(0, remainingWords.Count)];
-            if (wordPlacements.ContainsKey(wordToHighlight))
+            string originalWord = remainingWords[Random.Range(0, remainingWords.Count)];
+            string key = originalWord.ToUpper().Replace(" ", "");
+
+            if (wordPlacements.ContainsKey(key))
             {
-                Placement p = wordPlacements[wordToHighlight];
+                Placement p = wordPlacements[key];
                 GridCell firstCell = null;
                 GridCell lastCell = null;
 
-                for (int i = 0; i < wordToHighlight.Length; i++)
+                for (int i = 0; i < key.Length; i++)
                 {
                     GridCell cell = GetCellAt(p.y + i * p.dy, p.x + i * p.dx);
                     if (cell != null)
                     {
                         cell.SetFound();
                         if (i == 0) firstCell = cell;
-                        if (i == wordToHighlight.Length - 1) lastCell = cell;
+                        if (i == key.Length - 1) lastCell = cell;
                     }
                 }
                 
                 // Draw selection line
-                if (firstCell != null && lastCell != null)
+                if (firstCell != null && lastCell != null && inputManager != null)
                 {
-                    WordSearchInput inputManager = FindObjectOfType<WordSearchInput>();
-                    if (inputManager != null)
-                    {
-                        inputManager.CreatePermanentLine(firstCell, lastCell);
-                    }
+                    inputManager.CreatePermanentLine(firstCell, lastCell);
                 }
 
                 // Also mark as found in the logic
-                OnWordFound(wordToHighlight);
-                Debug.Log($"[WordSearch] Hint found word: {wordToHighlight}");
+                OnWordFound(originalWord);
+                Debug.Log($"[WordSearch] Hint found word: {originalWord}");
+            }
+            else
+            {
+                Debug.LogWarning($"[WordSearch] Word placement not found for: {key}");
             }
         }
+    }
+
+    private bool IsWordFound(string word)
+    {
+        foreach (string found in foundWords)
+        {
+            if (string.Equals(found.ToUpper().Replace(" ", ""), word.ToUpper().Replace(" ", "")))
+                return true;
+        }
+        return false;
     }
 
     int GetOverlapScore(string word, int x, int y, int dx, int dy)
@@ -251,9 +272,20 @@ public class WordSearchGrid : MonoBehaviour
 
     public void OnWordFound(string word)
     {
-        if (wordsToFind.Contains(word) && !foundWords.Contains(word))
+        // Find the matching word in wordsToFind (case-insensitive)
+        string matchingWord = null;
+        foreach (string w in wordsToFind)
         {
-            foundWords.Add(word);
+            if (string.Equals(w.ToUpper().Replace(" ", ""), word.ToUpper().Replace(" ", "")))
+            {
+                matchingWord = w;
+                break;
+            }
+        }
+
+        if (matchingWord != null && !foundWords.Contains(matchingWord))
+        {
+            foundWords.Add(matchingWord);
             UpdateWordListUI();
             
             // Update progress: ratio of found words to total words

@@ -110,13 +110,15 @@ public class WordSearchInput : MonoBehaviour
         StringBuilder sb = new StringBuilder();
         foreach (var cell in selectedCells) sb.Append(cell.letter);
 
-        string word = sb.ToString().ToUpper();
-        string reversedWord = ReverseString(word);
+        string selectedWord = sb.ToString();
+        string reversedWord = ReverseString(selectedWord);
 
         bool found = false;
-        if (gridManager.wordsToFind.Contains(word) || gridManager.wordsToFind.Contains(reversedWord))
+        string matchingWord = FindMatchingWord(selectedWord);
+        if (matchingWord == null) matchingWord = FindMatchingWord(reversedWord);
+
+        if (matchingWord != null)
         {
-            string finalWord = gridManager.wordsToFind.Contains(word) ? word : reversedWord;
             Color randomColor = GetRandomColor();
             randomColor.a = 0.6f; // Semi-transparent for the line
 
@@ -128,7 +130,7 @@ public class WordSearchInput : MonoBehaviour
                 currentLine.SetLine(startCell.transform.position, selectedCells[selectedCells.Count-1].transform.position, lineWidth, randomColor);
             }
 
-            gridManager.OnWordFound(finalWord);
+            gridManager.OnWordFound(matchingWord);
             found = true;
         }
 
@@ -140,6 +142,19 @@ public class WordSearchInput : MonoBehaviour
         
         currentLine = null;
         selectedCells.Clear();
+    }
+
+    private string FindMatchingWord(string word)
+    {
+        if (gridManager == null || gridManager.wordsToFind == null) return null;
+        
+        string normalizedTarget = word.ToUpper().Replace(" ", "");
+        foreach (string w in gridManager.wordsToFind)
+        {
+            if (string.Equals(w.ToUpper().Replace(" ", ""), normalizedTarget))
+                return w;
+        }
+        return null;
     }
 
     public void CreatePermanentLine(GridCell start, GridCell end)
