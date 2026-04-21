@@ -25856,7 +25856,7 @@
                     },
                     {
                         "name": "xAdvance#get",
-                        "excluded": true
+                        "excluded": false
                     },
                     {
                         "name": "xAdvance#set",
@@ -27630,6 +27630,10 @@
                     },
                     {
                         "name": "IsWordFound",
+                        "excluded": false
+                    },
+                    {
+                        "name": "UpdateHintUI",
                         "excluded": false
                     }
                 ]

@@ -14,12 +14,15 @@ public class WordSearchGrid : MonoBehaviour
     public GameObject ctaPanel; // Call To Action panel
     public float gridPadding = 20f;
     public Button hintButton;
+    public TextMeshProUGUI hintCountText;
     public WordSearchInput inputManager;
+    public int maxHints = 3;
 
     private char[,] grid;
     private GridCell[,] cellObjects;
     private List<string> foundWords = new List<string>(); // Stores the original word from wordsToFind
     private Dictionary<string, Placement> wordPlacements = new Dictionary<string, Placement>();
+    private int hintsUsed = 0;
 
     public GridCell GetCellAt(int row, int col)
     {
@@ -41,6 +44,15 @@ public class WordSearchGrid : MonoBehaviour
         
         GenerateGrid();
         UpdateWordListUI();
+        UpdateHintUI();
+    }
+
+    void UpdateHintUI()
+    {
+        if (hintCountText != null)
+        {
+            hintCountText.text = $"{maxHints - hintsUsed}";
+        }
     }
 
     void GenerateGrid()
@@ -196,6 +208,7 @@ public class WordSearchGrid : MonoBehaviour
     public void HighlightRandomWord()
     {
         if (GameManager.Instance != null && !GameManager.Instance.isGameActive) return;
+        if (hintsUsed >= maxHints) return;
 
         List<string> remainingWords = new List<string>();
         foreach (var word in wordsToFind)
@@ -208,6 +221,13 @@ public class WordSearchGrid : MonoBehaviour
 
         if (remainingWords.Count > 0)
         {
+            hintsUsed++;
+            UpdateHintUI();
+            if (hintsUsed >= maxHints && hintButton != null)
+            {
+                hintButton.interactable = false;
+            }
+
             string originalWord = remainingWords[Random.Range(0, remainingWords.Count)];
             string key = originalWord.ToUpper().Replace(" ", "");
 
