@@ -24,6 +24,36 @@ public class WordSearchGrid : MonoBehaviour
     private Dictionary<string, Placement> wordPlacements = new Dictionary<string, Placement>();
     private int hintsUsed = 0;
 
+    public void SetupLevel(LevelData data)
+    {
+        gridWidth = data.width;
+        gridHeight = data.height;
+        wordsToFind = new List<string>(data.words);
+        foundWords.Clear();
+        
+        // Clear existing cells safely
+        foreach (Transform child in gridRoot)
+        {
+            if (child.GetComponent<GridCell>() != null)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        // Clear existing lines if inputManager is available
+        if (inputManager != null && inputManager.lineRoot != null)
+        {
+            foreach (Transform child in inputManager.lineRoot)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+
+        GenerateGrid();
+        UpdateWordListUI();
+        UpdateHintUI();
+    }
+
     public GridCell GetCellAt(int row, int col)
     {
         if (cellObjects == null) return null;
@@ -42,9 +72,7 @@ public class WordSearchGrid : MonoBehaviour
         if (hintButton != null)
             hintButton.onClick.AddListener(HighlightRandomWord);
         
-        GenerateGrid();
-        UpdateWordListUI();
-        UpdateHintUI();
+        // Removed GenerateGrid() here as it is now called by GameManager via SetupLevel()
     }
 
     void UpdateHintUI()

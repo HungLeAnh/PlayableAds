@@ -2,12 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using Luna.Unity;
 using TMPro;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     
     public WordSearchGrid grid;
+    public List<LevelData> levels;
+    public int currentLevelIndex = 0;
     public bool useTimer = true;
     public float gameDuration = 60f;
     public TextMeshProUGUI timerText;
@@ -26,12 +29,9 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        if (useTimer)
-        {
-            timeRemaining = gameDuration;
-        }
-        UpdateTimerUI();
-        UpdateProgress(0);
+        InitializeLevels();
+        LoadLevel(currentLevelIndex);
+        
         LifeCycle.GameStarted();
         
         if (vignetteImage != null)
@@ -39,6 +39,67 @@ public class GameManager : MonoBehaviour
             vignetteImage.gameObject.SetActive(false);
             vignetteImage.raycastTarget = false; // Ensure it doesn't block input
         }
+    }
+
+    void InitializeLevels()
+    {
+        if (levels == null || levels.Count == 0)
+        {
+            levels = new List<LevelData>();
+
+            List<string> commonWords = new List<string> { "BRAIN", "LOGIC", "GENIUS", "SCIENCE", "ENERGY", "SMART" };
+            int commonWidth = 6;
+            int commonHeight = 8;
+
+            // Level 1: Easy
+            levels.Add(new LevelData {
+                levelName = "Level 1",
+                width = commonWidth,
+                height = commonHeight,
+                words = new List<string>(commonWords),
+                timeLimit = 60f
+            });
+
+            // Level 2: Challenging (15 seconds)
+            levels.Add(new LevelData {
+                levelName = "Level 2",
+                width = commonWidth,
+                height = commonHeight,
+                words = new List<string> { "BRAIN", "GENIUS", "SCIENCE", "SMART" },
+                timeLimit = 15f
+            });
+
+            // Level 3: Very Hard
+            levels.Add(new LevelData {
+                levelName = "Level 3",
+                width = commonWidth,
+                height = commonHeight,
+                words = new List<string>(commonWords),
+                timeLimit = 30f // Adjusted for "Hard" but using same words
+            });
+        }
+    }
+
+    public void LoadLevel(int index)
+    {
+        if (index < 0 || index >= levels.Count) return;
+
+        currentLevelIndex = index;
+        LevelData data = levels[index];
+        
+        gameDuration = data.timeLimit;
+        timeRemaining = gameDuration;
+        isGameActive = true;
+
+        if (grid != null)
+        {
+            grid.SetupLevel(data);
+        }
+
+        UpdateTimerUI();
+        UpdateProgress(0);
+        
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
     }
 
     void Update()
@@ -101,10 +162,23 @@ public class GameManager : MonoBehaviour
 
     public void OnGameComplete()
     {
-        isGameActive = false;
-        if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-        LifeCycle.GameEnded();
-        Debug.Log("Game Complete!");
+        if (currentLevelIndex < levels.Count - 1)
+        {
+            Debug.Log($"Level {currentLevelIndex + 1} Complete! Loading next level...");
+            Invoke("LoadNextLevel", 2f); // Load next level after 2 seconds
+        }
+        else
+        {
+            isGameActive = false;
+            if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
+            LifeCycle.GameEnded();
+            Debug.Log("All Levels Complete!");
+        }
+    }
+
+    void LoadNextLevel()
+    {
+        LoadLevel(currentLevelIndex + 1);
     }
 
     void OnGameLose()

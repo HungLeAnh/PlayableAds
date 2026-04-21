@@ -14,7 +14,7 @@ public class SelectionLine : MonoBehaviour
 
     public void SetLine(Vector2 startPos, Vector2 endPos, float width, Color color)
     {
-        if (image == null || rectTransform == null) return;
+        if (image == null || rectTransform == null || rectTransform.parent == null) return;
 
         image.color = color;
         

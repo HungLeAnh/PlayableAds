@@ -334,6 +334,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 132759290}
+  levels: []
+  currentLevelIndex: 0
   useTimer: 1
   gameDuration: 60
   timerText: {fileID: 2128959914}
