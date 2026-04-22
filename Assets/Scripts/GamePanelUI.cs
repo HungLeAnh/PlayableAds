@@ -4,8 +4,9 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System;
 
-public class WinPanelUI : MonoBehaviour, IPointerClickHandler
+public class GamePanelUI : MonoBehaviour, IPointerClickHandler
 {
+    public TextMeshProUGUI panelText;
     private Action onPanelClicked;
 
     public void Setup(Action onClick)

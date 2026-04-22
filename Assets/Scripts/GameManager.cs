@@ -20,18 +20,15 @@ public class GameManager : MonoBehaviour
     public Image vignetteImage;
     public float vignettePulseSpeed = 4f;
     public TransitionUI transitionUI;
-    public WinPanelUI winPanel;
+    public GamePanelUI resultPanel;
 
     private float timeRemaining;
     public bool isGameActive = true;
+    private bool isWinState = false;
     
     void Awake()
     {
-        Instance = this;      
-        if (transitionUI != null)
-        {
-            StartCoroutine(transitionUI.FadeOut());
-        }
+        Instance = this;
     }
 
     void Start()
@@ -47,29 +44,77 @@ public class GameManager : MonoBehaviour
             vignetteImage.raycastTarget = false; // Ensure it doesn't block input
         }
 
-        winPanel.Setup(OnWinPanelClicked);
+        if (transitionUI == null)
+        {
+            CreateTransitionUI();
+        }
+
+        if (resultPanel != null)
+        {
+            resultPanel.Setup(OnResultPanelClicked);
+        }
+
+        if (transitionUI != null)
+        {
+            StartCoroutine(transitionUI.FadeOut());
+        }
     }
 
-    void OnWinPanelClicked()
+    void OnResultPanelClicked()
     {
-        if (winPanel != null) winPanel.Hide();
+        if (resultPanel != null) resultPanel.Hide();
         
-        if (currentLevelIndex < levels.Count - 1)
+        if (isWinState)
         {
-            StartCoroutine(TransitionToNextLevel());
+            if (currentLevelIndex < levels.Count - 1)
+            {
+                StartCoroutine(TransitionToNextLevel());
+            }
+            else
+            {
+                FinishGame();
+            }
         }
         else
         {
-            if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-            LifeCycle.GameEnded();
-            Debug.Log("All Levels Complete!");
-            
-            // Show CTA if not already shown by Grid
-            if (grid != null && grid.ctaPanel != null)
-            {
-                grid.ctaPanel.SetActive(true);
-            }
+            FinishGame();
         }
+    }
+
+    void FinishGame()
+    {
+        isGameActive = false;
+        if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
+        LifeCycle.GameEnded();
+        Debug.Log("Game Finished");
+        
+        // Show CTA
+        if (grid != null && grid.ctaPanel != null)
+        {
+            grid.ctaPanel.SetActive(true);
+        }
+    }
+
+    void CreateTransitionUI()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null) return;
+
+        GameObject transitionObj = new GameObject("LevelTransition");
+        transitionObj.transform.SetParent(canvas.transform, false);
+        transitionObj.transform.SetAsLastSibling(); // Ensure it's on top
+        
+        Image img = transitionObj.AddComponent<Image>();
+        img.color = Color.black;
+        
+        RectTransform rt = img.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+
+        transitionUI = transitionObj.AddComponent<TransitionUI>();
+        transitionUI.fadeImage = img;
     }
 
     void InitializeLevels()
@@ -194,22 +239,22 @@ public class GameManager : MonoBehaviour
     public void OnGameComplete()
     {
         isGameActive = false;
-        if (winPanel != null)
+        isWinState = true;
+        if (resultPanel != null)
         {
-            winPanel.Show();
+            if (resultPanel.panelText != null) resultPanel.panelText.text = "YOU WIN!";
+            resultPanel.Show();
         }
         else
         {
-            // Fallback if no win panel
+            // Fallback
             if (currentLevelIndex < levels.Count - 1)
             {
                 StartCoroutine(TransitionToNextLevel());
             }
             else
             {
-                if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-                LifeCycle.GameEnded();
-                Debug.Log("All Levels Complete!");
+                FinishGame();
             }
         }
     }
@@ -243,8 +288,19 @@ public class GameManager : MonoBehaviour
     void OnGameLose()
     {
         isGameActive = false;
+        isWinState = false;
         if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+        
+        if (resultPanel != null)
+        {
+            if (resultPanel.panelText != null) resultPanel.panelText.text = "TIME UP!";
+            resultPanel.Show();
+        }
+        else if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+        
         LifeCycle.GameEnded();
         Debug.Log("Game Over - Time Out!");
     }
