@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public Slider progressSlider;
     public GameObject gameOverPanel;
     public Image vignetteImage;
+    public PulsatingVignette vignetteEffect;
     public float vignettePulseSpeed = 4f;
     public TransitionUI transitionUI;
     public GamePanelUI resultPanel;
@@ -237,21 +238,25 @@ public class GameManager : MonoBehaviour
 
     void UpdateVignette()
     {
-        if (vignetteImage == null) return;
+        // Red pulse when time is low (<= 6 seconds)
+        bool shouldPulse = (timeRemaining <= 6f && timeRemaining > 0);
 
-        // Changed threshold to 6 seconds as requested
-        if (timeRemaining <= 6f && timeRemaining > 0)
+        if (vignetteEffect != null)
         {
-            if (!vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(true);
-            
-            // Pulse at constant speed (removed speedMultiplier)
-            float alpha = (Mathf.Sin(Time.time * vignettePulseSpeed) + 1f) / 2f;
-            alpha *= 0.6f; // Max alpha 0.6
-            vignetteImage.color = new Color(1, 0, 0, alpha);
+            vignetteEffect.SetPulsing(shouldPulse);
         }
-        else
+        else if (vignetteImage != null)
         {
-            if (vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(false);
+            if (shouldPulse)
+            {
+                if (!vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(true);
+                float alpha = ((Mathf.Sin(Time.time * vignettePulseSpeed) + 1f) / 2f) * 0.6f;
+                vignetteImage.color = new Color(1, 0, 0, alpha);
+            }
+            else
+            {
+                if (vignetteImage.gameObject.activeSelf) vignetteImage.gameObject.SetActive(false);
+            }
         }
     }
 
