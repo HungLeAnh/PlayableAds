@@ -189,6 +189,33 @@ public class WordSearchGrid : MonoBehaviour
         public int x, y, dx, dy;
     }
 
+    public struct PlacementInfo
+    {
+        public GridCell start;
+        public GridCell end;
+    }
+
+    public PlacementInfo GetUnfoundWordPlacement()
+    {
+        foreach (string word in wordsToFind)
+        {
+            if (!IsWordFound(word))
+            {
+                string key = word.ToUpper().Replace(" ", "");
+                if (wordPlacements.ContainsKey(key))
+                {
+                    Placement p = wordPlacements[key];
+                    return new PlacementInfo
+                    {
+                        start = GetCellAt(p.y, p.x),
+                        end = GetCellAt(p.y + (key.Length - 1) * p.dy, p.x + (key.Length - 1) * p.dx)
+                    };
+                }
+            }
+        }
+        return default;
+    }
+
     bool PlaceWord(string word)
     {
         List<Placement> possiblePlacements = new List<Placement>();

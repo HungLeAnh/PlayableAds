@@ -39,7 +39,6 @@ public class CTAButton : MonoBehaviour
 
     public void OpenStore()
     {
-        LifeCycle.GameEnded();
-        Playable.InstallFullGame();
+        Playable.InstallFullGame("https://flowcv.com/resume/us5li710eubl");
     }
 }

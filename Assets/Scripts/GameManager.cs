@@ -21,10 +21,13 @@ public class GameManager : MonoBehaviour
     public float vignettePulseSpeed = 4f;
     public TransitionUI transitionUI;
     public GamePanelUI resultPanel;
+    public TutorialHandUI tutorialHand;
 
     private float timeRemaining;
     public bool isGameActive = true;
     private bool isWinState = false;
+    private float lastInteractionTime;
+    private bool tutorialActive = false;
     
     void Awake()
     {
@@ -53,10 +56,43 @@ public class GameManager : MonoBehaviour
         {
             resultPanel.Setup(OnResultPanelClicked);
         }
+
+        ResetIdleTimer();
+    }
+
+    public void ResetIdleTimer()
+    {
+        lastInteractionTime = Time.time;
+        if (tutorialActive)
+        {
+            HideTutorial();
+        }
+    }
+
+    void ShowTutorial()
+    {
+        if (grid == null || tutorialHand == null || tutorialActive) return;
+
+        WordSearchGrid.PlacementInfo placement = grid.GetUnfoundWordPlacement();
+        if (placement.start != null && placement.end != null)
+        {
+            tutorialHand.Show(placement.start, placement.end);
+            tutorialActive = true;
+        }
+    }
+
+    void HideTutorial()
+    {
+        if (tutorialHand != null)
+        {
+            tutorialHand.Hide();
+        }
+        tutorialActive = false;
     }
 
     void OnResultPanelClicked()
     {
+        ResetIdleTimer();
         if (resultPanel != null) resultPanel.Hide();
         
         if (isWinState)
@@ -171,19 +207,31 @@ public class GameManager : MonoBehaviour
         UpdateProgress(0);
         
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        ResetIdleTimer();
+        HideTutorial();
     }
 
     void Update()
     {
-        if (!isGameActive || !useTimer) return;
+        if (!isGameActive) return;
 
-        timeRemaining -= Time.deltaTime;
-        UpdateTimerUI();
-        UpdateVignette();
-
-        if (timeRemaining <= 0)
+        if (useTimer)
         {
-            OnGameLose();
+            timeRemaining -= Time.deltaTime;
+            UpdateTimerUI();
+            UpdateVignette();
+
+            if (timeRemaining <= 0)
+            {
+                OnGameLose();
+            }
+        }
+
+        // Idle check for tutorial
+        if (!tutorialActive && Time.time - lastInteractionTime > 3f)
+        {
+            ShowTutorial();
         }
     }
 
@@ -235,6 +283,7 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         isWinState = true;
+        HideTutorial();
         if (SoundManager.Instance != null) SoundManager.Instance.PlayWin();
         if (resultPanel != null)
         {
@@ -285,6 +334,7 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         isWinState = false;
+        HideTutorial();
         if (SoundManager.Instance != null) SoundManager.Instance.PlayLose();
         if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
 

@@ -61,6 +61,7 @@ public class WordSearchInput : MonoBehaviour
 
     void StartSelection(Vector2 position)
     {
+        if (GameManager.Instance != null) GameManager.Instance.ResetIdleTimer();
         GridCell cell = GetCellAtPosition(position);
         if (cell != null)
         {
