@@ -404,7 +404,7 @@ MonoBehaviour:
   hintButton: {fileID: 696418035}
   hintCountText: {fileID: 944342570}
   inputManager: {fileID: 132759289}
-  maxHints: 3
+  maxHints: 999
 --- !u!1 &225973424
 GameObject:
   m_ObjectHideFlags: 0

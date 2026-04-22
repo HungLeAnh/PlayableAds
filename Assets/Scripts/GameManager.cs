@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Luna.Unity;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
@@ -18,7 +19,8 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverPanel;
     public Image vignetteImage;
     public float vignettePulseSpeed = 4f;
-    
+    public TransitionUI transitionUI;
+
     private float timeRemaining;
     public bool isGameActive = true;
     
@@ -39,6 +41,38 @@ public class GameManager : MonoBehaviour
             vignetteImage.gameObject.SetActive(false);
             vignetteImage.raycastTarget = false; // Ensure it doesn't block input
         }
+
+        if (transitionUI == null)
+        {
+            CreateTransitionUI();
+        }
+
+        if (transitionUI != null)
+        {
+            StartCoroutine(transitionUI.FadeOut());
+        }
+    }
+
+    void CreateTransitionUI()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null) return;
+
+        GameObject transitionObj = new GameObject("LevelTransition");
+        transitionObj.transform.SetParent(canvas.transform, false);
+        transitionObj.transform.SetAsLastSibling(); // Ensure it's on top
+        
+        Image img = transitionObj.AddComponent<Image>();
+        img.color = Color.black;
+        
+        RectTransform rt = img.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+
+        transitionUI = transitionObj.AddComponent<TransitionUI>();
+        transitionUI.fadeImage = img;
     }
 
     void InitializeLevels()
@@ -165,7 +199,7 @@ public class GameManager : MonoBehaviour
         if (currentLevelIndex < levels.Count - 1)
         {
             Debug.Log($"Level {currentLevelIndex + 1} Complete! Loading next level...");
-            Invoke("LoadNextLevel", 2f); // Load next level after 2 seconds
+            StartCoroutine(TransitionToNextLevel());
         }
         else
         {
@@ -173,6 +207,27 @@ public class GameManager : MonoBehaviour
             if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
             LifeCycle.GameEnded();
             Debug.Log("All Levels Complete!");
+        }
+    }
+
+    IEnumerator TransitionToNextLevel()
+    {
+        isGameActive = false;
+        
+        if (transitionUI != null)
+        {
+            yield return transitionUI.FadeIn();
+        }
+        else
+        {
+            yield return new WaitForSeconds(1f);
+        }
+
+        LoadNextLevel();
+
+        if (transitionUI != null)
+        {
+            yield return transitionUI.FadeOut();
         }
     }
 

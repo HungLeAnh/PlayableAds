@@ -31,6 +31,9 @@ public class WordSearchGrid : MonoBehaviour
         wordsToFind = new List<string>(data.words);
         foundWords.Clear();
         
+        if (ctaPanel != null)
+            ctaPanel.SetActive(false);
+
         // Clear existing cells safely
         foreach (Transform child in gridRoot)
         {
@@ -364,7 +367,11 @@ public class WordSearchGrid : MonoBehaviour
     {
         if (foundWords.Count == wordsToFind.Count)
         {
-            ctaPanel.SetActive(true);
+            if (GameManager.Instance != null && GameManager.Instance.currentLevelIndex == GameManager.Instance.levels.Count - 1)
+            {
+                ctaPanel.SetActive(true);
+            }
+
             if (GameManager.Instance != null)
                 GameManager.Instance.OnGameComplete();
         }
