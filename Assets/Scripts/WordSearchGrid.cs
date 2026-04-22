@@ -10,7 +10,8 @@ public class WordSearchGrid : MonoBehaviour
     public List<string> wordsToFind = new List<string> { "LUNA", "PLAYABLE", "UNITY", "ADS", "SEARCH", "WORD" };
     public GameObject cellPrefab;
     public Transform gridRoot;
-    public TextMeshProUGUI wordListText;
+    public Transform wordListRoot;
+    public GameObject wordItemPrefab;
     public GameObject ctaPanel; // Call To Action panel
     public float gridPadding = 20f;
     public Button hintButton;
@@ -352,15 +353,26 @@ public class WordSearchGrid : MonoBehaviour
 
     void UpdateWordListUI()
     {
-        string text = "";
+        if (wordListRoot == null || wordItemPrefab == null) return;
+
+        // Clear existing words
+        foreach (Transform child in wordListRoot)
+        {
+            Destroy(child.gameObject);
+        }
+
         foreach (string word in wordsToFind)
         {
-            if (foundWords.Contains(word))
-                text += "<s>" + word + "</s>\t";
-            else
-                text += word + "\t";
+            GameObject item = Instantiate(wordItemPrefab, wordListRoot);
+            TextMeshProUGUI txt = item.GetComponentInChildren<TextMeshProUGUI>();
+            if (txt != null)
+            {
+                if (foundWords.Contains(word))
+                    txt.text = "<s>" + word + "</s>";
+                else
+                    txt.text = word;
+            }
         }
-        wordListText.text = text;
     }
 
     void CheckWinCondition()
