@@ -16,6 +16,9 @@ public class TransitionUI : MonoBehaviour
         if (fadeImage != null)
         {
             fadeImage.gameObject.SetActive(true);
+            Color c = fadeImage.color;
+            c.a = 0;
+            fadeImage.color = c;
             fadeImage.raycastTarget = false;
         }
     }

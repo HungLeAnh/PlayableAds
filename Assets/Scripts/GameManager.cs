@@ -53,11 +53,6 @@ public class GameManager : MonoBehaviour
         {
             resultPanel.Setup(OnResultPanelClicked);
         }
-
-        if (transitionUI != null)
-        {
-            StartCoroutine(transitionUI.FadeOut());
-        }
     }
 
     void OnResultPanelClicked()
@@ -105,7 +100,7 @@ public class GameManager : MonoBehaviour
         transitionObj.transform.SetAsLastSibling(); // Ensure it's on top
         
         Image img = transitionObj.AddComponent<Image>();
-        img.color = Color.black;
+        img.color = new Color(0, 0, 0, 0); // Start transparent
         
         RectTransform rt = img.rectTransform;
         rt.anchorMin = Vector2.zero;
