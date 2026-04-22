@@ -20,13 +20,18 @@ public class GameManager : MonoBehaviour
     public Image vignetteImage;
     public float vignettePulseSpeed = 4f;
     public TransitionUI transitionUI;
+    public WinPanelUI winPanel;
 
     private float timeRemaining;
     public bool isGameActive = true;
     
     void Awake()
     {
-        Instance = this;
+        Instance = this;      
+        if (transitionUI != null)
+        {
+            StartCoroutine(transitionUI.FadeOut());
+        }
     }
 
     void Start()
@@ -42,37 +47,29 @@ public class GameManager : MonoBehaviour
             vignetteImage.raycastTarget = false; // Ensure it doesn't block input
         }
 
-        if (transitionUI == null)
-        {
-            CreateTransitionUI();
-        }
-
-        if (transitionUI != null)
-        {
-            StartCoroutine(transitionUI.FadeOut());
-        }
+        winPanel.Setup(OnWinPanelClicked);
     }
 
-    void CreateTransitionUI()
+    void OnWinPanelClicked()
     {
-        Canvas canvas = FindObjectOfType<Canvas>();
-        if (canvas == null) return;
-
-        GameObject transitionObj = new GameObject("LevelTransition");
-        transitionObj.transform.SetParent(canvas.transform, false);
-        transitionObj.transform.SetAsLastSibling(); // Ensure it's on top
+        if (winPanel != null) winPanel.Hide();
         
-        Image img = transitionObj.AddComponent<Image>();
-        img.color = Color.black;
-        
-        RectTransform rt = img.rectTransform;
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.sizeDelta = Vector2.zero;
-        rt.anchoredPosition = Vector2.zero;
-
-        transitionUI = transitionObj.AddComponent<TransitionUI>();
-        transitionUI.fadeImage = img;
+        if (currentLevelIndex < levels.Count - 1)
+        {
+            StartCoroutine(TransitionToNextLevel());
+        }
+        else
+        {
+            if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
+            LifeCycle.GameEnded();
+            Debug.Log("All Levels Complete!");
+            
+            // Show CTA if not already shown by Grid
+            if (grid != null && grid.ctaPanel != null)
+            {
+                grid.ctaPanel.SetActive(true);
+            }
+        }
     }
 
     void InitializeLevels()
@@ -196,17 +193,24 @@ public class GameManager : MonoBehaviour
 
     public void OnGameComplete()
     {
-        if (currentLevelIndex < levels.Count - 1)
+        isGameActive = false;
+        if (winPanel != null)
         {
-            Debug.Log($"Level {currentLevelIndex + 1} Complete! Loading next level...");
-            StartCoroutine(TransitionToNextLevel());
+            winPanel.Show();
         }
         else
         {
-            isGameActive = false;
-            if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-            LifeCycle.GameEnded();
-            Debug.Log("All Levels Complete!");
+            // Fallback if no win panel
+            if (currentLevelIndex < levels.Count - 1)
+            {
+                StartCoroutine(TransitionToNextLevel());
+            }
+            else
+            {
+                if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
+                LifeCycle.GameEnded();
+                Debug.Log("All Levels Complete!");
+            }
         }
     }
 
