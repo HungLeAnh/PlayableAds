@@ -138,6 +138,7 @@ public class WordSearchInput : MonoBehaviour
         {
             if (currentLine != null) Destroy(currentLine.gameObject);
             ClearSelectionVisuals();
+            if (SoundManager.Instance != null) SoundManager.Instance.PlayWrongLetter();
         }
         
         currentLine = null;
@@ -241,6 +242,7 @@ public class WordSearchInput : MonoBehaviour
     {
         if (gridManager == null) return;
 
+        int oldCount = selectedCells.Count;
         ClearSelectionVisuals();
         selectedCells.Clear();
 
@@ -261,6 +263,11 @@ public class WordSearchInput : MonoBehaviour
             {
                 AddCell(cell);
             }
+        }
+
+        if (selectedCells.Count > oldCount && SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayLetterSelected();
         }
     }
 }

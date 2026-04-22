@@ -338,6 +338,7 @@ public class WordSearchGrid : MonoBehaviour
         if (matchingWord != null && !foundWords.Contains(matchingWord))
         {
             foundWords.Add(matchingWord);
+            if (SoundManager.Instance != null) SoundManager.Instance.PlayWordFound();
             UpdateWordListUI();
             
             // Update progress: ratio of found words to total words

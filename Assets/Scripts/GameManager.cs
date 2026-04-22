@@ -235,9 +235,10 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         isWinState = true;
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayWin();
         if (resultPanel != null)
         {
-            if (resultPanel.panelText != null) resultPanel.panelText.text = "YOU WIN!";
+            if (resultPanel.panelText != null) resultPanel.panelText.text = "YOU WIN";
             resultPanel.Show();
         }
         else
@@ -284,19 +285,29 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         isWinState = false;
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayLose();
         if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
-        
+
         if (resultPanel != null)
         {
-            if (resultPanel.panelText != null) resultPanel.panelText.text = "TIME UP!";
+            if (resultPanel.panelText != null) resultPanel.panelText.text = "YOU LOSE";
             resultPanel.Show();
         }
-        else if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(true);
-        }
-        
+
+        StartCoroutine(DelayedShowGameOver());
+
         LifeCycle.GameEnded();
         Debug.Log("Game Over - Time Out!");
     }
+
+    IEnumerator DelayedShowGameOver()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+    }
+
 }
