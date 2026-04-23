@@ -117,6 +117,8 @@ public class GameManager : MonoBehaviour
 
     void OnResultPanelClicked()
     {
+        if (resultPanel != null && !resultPanel.gameObject.activeSelf) return;
+
         ResetIdleTimer();
         if (resultPanel != null) resultPanel.Hide();
         
@@ -319,9 +321,22 @@ public class GameManager : MonoBehaviour
             if (resultPanel.panelText != null) resultPanel.panelText.text = "YOU WIN";
             resultPanel.Show();
         }
-        else
+        
+        StartCoroutine(DelayedWinTransition());
+    }
+
+    IEnumerator DelayedWinTransition()
+    {
+        yield return new WaitForSeconds(2f);
+        
+        // If the result panel is still showing, handle it
+        if (resultPanel != null && resultPanel.gameObject.activeSelf)
         {
-            // Fallback
+            OnResultPanelClicked();
+        }
+        else if (resultPanel == null)
+        {
+            // Fallback if no result panel
             if (currentLevelIndex < levels.Count - 1)
             {
                 StartCoroutine(TransitionToNextLevel());
