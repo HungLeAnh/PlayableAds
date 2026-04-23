@@ -24,6 +24,10 @@ public class TutorialHandUI : MonoBehaviour
 
     IEnumerator PingPongAnimation(GridCell start, GridCell end)
     {
+        yield return null; // Wait for layout to settle
+
+        if (start == null || end == null) yield break;
+
         Vector3 startPos = start.transform.position;
         Vector3 endPos = end.transform.position;
 

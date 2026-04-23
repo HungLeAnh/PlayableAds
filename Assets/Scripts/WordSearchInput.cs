@@ -133,6 +133,12 @@ public class WordSearchInput : MonoBehaviour
 
             gridManager.OnWordFound(matchingWord);
             found = true;
+
+            // Visual feedback: EXCELLENT!
+            if (GameManager.Instance != null && GameManager.Instance.tutorialTextUI != null)
+            {
+                GameManager.Instance.tutorialTextUI.ShowFeedback("EXCELLENT!", new Color(0.2f, 0.8f, 0.2f)); // A nice green
+            }
         }
 
         if (!found)
@@ -140,6 +146,12 @@ public class WordSearchInput : MonoBehaviour
             if (currentLine != null) Destroy(currentLine.gameObject);
             ClearSelectionVisuals();
             if (SoundManager.Instance != null) SoundManager.Instance.PlayWrongLetter();
+
+            // Visual feedback: TRY AGAIN!
+            if (GameManager.Instance != null && GameManager.Instance.tutorialTextUI != null)
+            {
+                GameManager.Instance.tutorialTextUI.ShowFeedback("TRY AGAIN!", new Color(0.9f, 0.1f, 0.1f)); // A nice red
+            }
         }
         
         currentLine = null;

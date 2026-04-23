@@ -61,14 +61,18 @@ public class GameManager : MonoBehaviour
             resultPanel.Setup(OnResultPanelClicked);
         }
 
-        ResetIdleTimer();
+        ResetIdleTimer(false);
         ShowTutorial(); // Initial tutorial
     }
 
-    public void ResetIdleTimer()
+    public void ResetIdleTimer(bool isActualInteraction = true)
     {
         lastInteractionTime = Time.time;
-        firstInteractionDone = true;
+        if (isActualInteraction)
+        {
+            firstInteractionDone = true;
+        }
+        
         if (tutorialActive)
         {
             HideTutorial();
@@ -229,7 +233,7 @@ public class GameManager : MonoBehaviour
         
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
 
-        ResetIdleTimer();
+        ResetIdleTimer(false);
         HideTutorial();
     }
 

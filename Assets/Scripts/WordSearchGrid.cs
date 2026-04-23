@@ -117,10 +117,6 @@ public class WordSearchGrid : MonoBehaviour
         {
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayout.constraintCount = gridWidth;
-
-            // Force layout rebuild
-            RectTransform rectTransform = gridRoot.GetComponent<RectTransform>();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
         }
 
         cellObjects = new GridCell[gridWidth, gridHeight];
@@ -134,6 +130,9 @@ public class WordSearchGrid : MonoBehaviour
                 cellObjects[x, y] = cell;
             }
         }
+
+        // Force layout rebuild after all cells are instantiated
+        LayoutRebuilder.ForceRebuildLayoutImmediate(gridRoot.GetComponent<RectTransform>());
     }
 
     bool TryGenerateGrid()
