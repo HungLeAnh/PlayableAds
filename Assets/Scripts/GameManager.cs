@@ -23,12 +23,15 @@ public class GameManager : MonoBehaviour
     public TransitionUI transitionUI;
     public GamePanelUI resultPanel;
     public TutorialHandUI tutorialHand;
+    public TutorialTextUI tutorialTextUI;
+    public float idleTimeThreshold = 3f;
 
     private float timeRemaining;
     public bool isGameActive = true;
     private bool isWinState = false;
     private float lastInteractionTime;
     private bool tutorialActive = false;
+    private bool firstInteractionDone = false;
     
     void Awake()
     {
@@ -59,11 +62,13 @@ public class GameManager : MonoBehaviour
         }
 
         ResetIdleTimer();
+        ShowTutorial(); // Initial tutorial
     }
 
     public void ResetIdleTimer()
     {
         lastInteractionTime = Time.time;
+        firstInteractionDone = true;
         if (tutorialActive)
         {
             HideTutorial();
@@ -72,14 +77,25 @@ public class GameManager : MonoBehaviour
 
     void ShowTutorial()
     {
-        if (grid == null || tutorialHand == null || tutorialActive) return;
+        if (grid == null || (tutorialHand == null && tutorialTextUI == null) || tutorialActive) return;
 
-        WordSearchGrid.PlacementInfo placement = grid.GetUnfoundWordPlacement();
-        if (placement.start != null && placement.end != null)
+        bool handShown = false;
+        if (tutorialHand != null)
         {
-            tutorialHand.Show(placement.start, placement.end);
-            tutorialActive = true;
+            WordSearchGrid.PlacementInfo placement = grid.GetUnfoundWordPlacement();
+            if (placement.start != null && placement.end != null)
+            {
+                tutorialHand.Show(placement.start, placement.end);
+                handShown = true;
+            }
         }
+
+        if (tutorialTextUI != null)
+        {
+            tutorialTextUI.Show();
+        }
+
+        tutorialActive = true;
     }
 
     void HideTutorial()
@@ -87,6 +103,10 @@ public class GameManager : MonoBehaviour
         if (tutorialHand != null)
         {
             tutorialHand.Hide();
+        }
+        if (tutorialTextUI != null)
+        {
+            tutorialTextUI.Hide();
         }
         tutorialActive = false;
     }
@@ -230,7 +250,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Idle check for tutorial
-        if (!tutorialActive && Time.time - lastInteractionTime > 3f)
+        if (!tutorialActive && Time.time - lastInteractionTime > idleTimeThreshold)
         {
             ShowTutorial();
         }
