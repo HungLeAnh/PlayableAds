@@ -144,7 +144,6 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         if (vignetteImage != null) vignetteImage.gameObject.SetActive(false);
         LifeCycle.GameEnded();
-        Debug.Log("Game Finished");
         
         // Show CTA
         if (grid != null && grid.ctaPanel != null)
@@ -391,7 +390,6 @@ public class GameManager : MonoBehaviour
         StartCoroutine(DelayedShowGameOver());
 
         LifeCycle.GameEnded();
-        Debug.Log("Game Over - Time Out!");
     }
 
     IEnumerator DelayedShowGameOver()

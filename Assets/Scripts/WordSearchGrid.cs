@@ -102,15 +102,6 @@ public class WordSearchGrid : MonoBehaviour
             allWordsPlaced = TryGenerateGrid();
         }
 
-        if (!allWordsPlaced)
-        {
-            Debug.LogError($"[WordSearch] Failed to generate a valid grid after {maxRetries} retries!");
-        }
-        else
-        {
-            Debug.Log($"[WordSearch] Grid generated successfully in {currentRetry} attempts.");
-        }
-
         // 4. Instantiate grid cells
         GridLayoutGroup gridLayout = gridRoot.GetComponent<GridLayoutGroup>();
         if (gridLayout != null)
@@ -158,7 +149,6 @@ public class WordSearchGrid : MonoBehaviour
             string upperWord = word.ToUpper().Replace(" ", "");
             if (upperWord.Length > Mathf.Max(gridWidth, gridHeight))
             {
-                Debug.LogError($"Word {upperWord} is too long for the grid!");
                 continue;
             }
             
@@ -256,7 +246,6 @@ public class WordSearchGrid : MonoBehaviour
                 grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
             }
             wordPlacements[word] = p; // Store the placement
-            Debug.Log($"[WordSearch] Placed '{word}' at (col: {p.x}, row: {p.y}) direction: ({p.dx}, {p.dy})");
             return true;
         }
         
@@ -314,11 +303,6 @@ public class WordSearchGrid : MonoBehaviour
 
                 // Also mark as found in the logic
                 OnWordFound(originalWord);
-                Debug.Log($"[WordSearch] Hint found word: {originalWord}");
-            }
-            else
-            {
-                Debug.LogWarning($"[WordSearch] Word placement not found for: {key}");
             }
         }
     }
@@ -394,10 +378,11 @@ public class WordSearchGrid : MonoBehaviour
             TextMeshProUGUI txt = item.GetComponentInChildren<TextMeshProUGUI>();
             if (txt != null)
             {
+                txt.text = word;
                 if (foundWords.Contains(word))
-                    txt.text = "<s>" + word + "</s>";
-                else
-                    txt.text = word;
+                {
+                    txt.color = new Color(0.7f, 0.7f, 0.7f, 0.5f); // Greyed out
+                }
             }
         }
     }

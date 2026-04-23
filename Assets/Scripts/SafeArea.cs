@@ -14,7 +14,6 @@ public class SafeArea : MonoBehaviour
 
         if (rectTransform == null)
         {
-            Debug.LogError("Cannot apply safe area - no RectTransform found on " + name);
             Destroy(gameObject);
         }
 
