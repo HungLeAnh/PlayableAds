@@ -18,7 +18,7 @@ public class WordSearchInput : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance != null && !GameManager.Instance.isGameActive)
+        if (GameManager.Instance != null && !GameManager.Instance.IsGameActive)
         {
             if (isSelecting) EndSelection();
             return;
@@ -121,7 +121,7 @@ public class WordSearchInput : MonoBehaviour
         if (matchingWord != null)
         {
             Color randomColor = GetRandomColor();
-            randomColor.a = 0.6f; // Semi-transparent for the line
+            randomColor.a = 0.6f; 
 
             foreach (var cell in selectedCells) cell.SetFound();
             
@@ -134,10 +134,9 @@ public class WordSearchInput : MonoBehaviour
             gridManager.OnWordFound(matchingWord);
             found = true;
 
-            // Visual feedback: EXCELLENT!
-            if (GameManager.Instance != null && GameManager.Instance.tutorialTextUI != null)
+            if (GameManager.Instance != null && GameManager.Instance.TutorialTextUI != null)
             {
-                GameManager.Instance.tutorialTextUI.ShowFeedback("EXCELLENT!", new Color(0.2f, 0.8f, 0.2f)); // A nice green
+                GameManager.Instance.TutorialTextUI.ShowFeedback("EXCELLENT!", new Color(0.2f, 0.8f, 0.2f)); 
             }
         }
 
@@ -147,10 +146,9 @@ public class WordSearchInput : MonoBehaviour
             ClearSelectionVisuals();
             if (SoundManager.Instance != null) SoundManager.Instance.PlayWrongLetter();
 
-            // Visual feedback: TRY AGAIN!
-            if (GameManager.Instance != null && GameManager.Instance.tutorialTextUI != null)
+            if (GameManager.Instance != null && GameManager.Instance.TutorialTextUI != null)
             {
-                GameManager.Instance.tutorialTextUI.ShowFeedback("TRY AGAIN!", new Color(0.9f, 0.1f, 0.1f)); // A nice red
+                GameManager.Instance.TutorialTextUI.ShowFeedback("TRY AGAIN!", new Color(0.9f, 0.1f, 0.1f)); 
             }
         }
         
@@ -160,10 +158,10 @@ public class WordSearchInput : MonoBehaviour
 
     private string FindMatchingWord(string word)
     {
-        if (gridManager == null || gridManager.wordsToFind == null) return null;
+        if (gridManager == null || gridManager.WordsToFind == null) return null;
         
         string normalizedTarget = word.ToUpper().Replace(" ", "");
-        foreach (string w in gridManager.wordsToFind)
+        foreach (string w in gridManager.WordsToFind)
         {
             if (string.Equals(w.ToUpper().Replace(" ", ""), normalizedTarget))
                 return w;
@@ -185,7 +183,6 @@ public class WordSearchInput : MonoBehaviour
 
     Color GetRandomColor()
     {
-        // Generate a vibrant random color
         float h = UnityEngine.Random.Range(0f, 1f);   // Hue (0-1)
         float s = UnityEngine.Random.Range(0.5f, 1f); // Saturation (0.5-1)
         float v = UnityEngine.Random.Range(0.7f, 1f); // Value/Brightness (0.7-1)

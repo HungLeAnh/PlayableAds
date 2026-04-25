@@ -27,17 +27,16 @@ public class GridCell : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        // Highlight is handled by SelectionLine in WordSearchInput
+        
     }
 
     private void Awake()
     {
-        // Ensure there is a graphic component for raycasting on mobile
         Image img = GetComponent<Image>();
         if (img == null)
         {
             img = gameObject.AddComponent<Image>();
-            img.color = new Color(0, 0, 0, 0); // Transparent but raycastable
+            img.color = new Color(0, 0, 0, 0); 
         }
         img.raycastTarget = true;
     }

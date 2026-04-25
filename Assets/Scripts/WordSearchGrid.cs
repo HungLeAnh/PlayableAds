@@ -7,12 +7,11 @@ public class WordSearchGrid : MonoBehaviour
 {
     public int gridWidth = 10;
     public int gridHeight = 10;
-    public List<string> wordsToFind = new List<string> { "LUNA", "PLAYABLE", "UNITY", "ADS", "SEARCH", "WORD" };
     public GameObject cellPrefab;
     public Transform gridRoot;
     public Transform wordListRoot;
     public GameObject wordItemPrefab;
-    public GameObject ctaPanel; // Call To Action panel
+    public GameObject ctaPanel; 
     public float gridPadding = 20f;
     public Button hintButton;
     public TextMeshProUGUI hintCountText;
@@ -21,9 +20,12 @@ public class WordSearchGrid : MonoBehaviour
 
     private char[,] grid;
     private GridCell[,] cellObjects;
-    private List<string> foundWords = new List<string>(); // Stores the original word from wordsToFind
+    private List<string> foundWords = new List<string>();
     private Dictionary<string, Placement> wordPlacements = new Dictionary<string, Placement>();
     private int hintsUsed = 0;
+    private List<string> wordsToFind = new List<string>();
+
+    public List<string> WordsToFind { get => wordsToFind; set => wordsToFind = value; }
 
     public void SetupLevel(LevelData data)
     {
@@ -35,7 +37,6 @@ public class WordSearchGrid : MonoBehaviour
         if (ctaPanel != null)
             ctaPanel.SetActive(false);
 
-        // Clear existing cells safely
         foreach (Transform child in gridRoot)
         {
             if (child.GetComponent<GridCell>() != null)
@@ -44,7 +45,6 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // Clear existing lines if inputManager is available
         if (inputManager != null && inputManager.lineRoot != null)
         {
             foreach (Transform child in inputManager.lineRoot)
@@ -75,8 +75,6 @@ public class WordSearchGrid : MonoBehaviour
     {
         if (hintButton != null)
             hintButton.onClick.AddListener(HighlightRandomWord);
-        
-        // Removed GenerateGrid() here as it is now called by GameManager via SetupLevel()
     }
 
     void UpdateHintUI()
@@ -89,7 +87,6 @@ public class WordSearchGrid : MonoBehaviour
 
     void GenerateGrid()
     {
-        // Force UI layout to update to get correct dimensions
         Canvas.ForceUpdateCanvases();
         
         int maxRetries = 100;
@@ -102,7 +99,6 @@ public class WordSearchGrid : MonoBehaviour
             allWordsPlaced = TryGenerateGrid();
         }
 
-        // 4. Instantiate grid cells
         GridLayoutGroup gridLayout = gridRoot.GetComponent<GridLayoutGroup>();
         if (gridLayout != null)
         {
@@ -122,7 +118,6 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // Force layout rebuild after all cells are instantiated
         LayoutRebuilder.ForceRebuildLayoutImmediate(gridRoot.GetComponent<RectTransform>());
     }
 
@@ -131,7 +126,6 @@ public class WordSearchGrid : MonoBehaviour
         grid = new char[gridWidth, gridHeight];
         wordPlacements.Clear();
 
-        // 1. Initialize empty grid
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -140,7 +134,6 @@ public class WordSearchGrid : MonoBehaviour
             }
         }
 
-        // 2. Prepare and sort words
         List<string> sortedWords = new List<string>(wordsToFind);
         sortedWords.Sort((a, b) => b.Length.CompareTo(a.Length));
 
@@ -154,11 +147,10 @@ public class WordSearchGrid : MonoBehaviour
             
             if (!PlaceWord(upperWord))
             {
-                return false; // Failed to place a word, triggers a retry
+                return false; 
             }
         }
 
-        // 3. Fill empty spots with random letters
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -245,7 +237,7 @@ public class WordSearchGrid : MonoBehaviour
             {
                 grid[p.x + i * p.dx, p.y + i * p.dy] = word[i];
             }
-            wordPlacements[word] = p; // Store the placement
+            wordPlacements[word] = p;
             return true;
         }
         
@@ -254,7 +246,7 @@ public class WordSearchGrid : MonoBehaviour
 
     public void HighlightRandomWord()
     {
-        if (GameManager.Instance != null && !GameManager.Instance.isGameActive) return;
+        if (GameManager.Instance != null && !GameManager.Instance.IsGameActive) return;
         if (hintsUsed >= maxHints) return;
 
         List<string> remainingWords = new List<string>();
@@ -295,13 +287,11 @@ public class WordSearchGrid : MonoBehaviour
                     }
                 }
                 
-                // Draw selection line
                 if (firstCell != null && lastCell != null && inputManager != null)
                 {
                     inputManager.CreatePermanentLine(firstCell, lastCell);
                 }
 
-                // Also mark as found in the logic
                 OnWordFound(originalWord);
             }
         }
@@ -334,7 +324,6 @@ public class WordSearchGrid : MonoBehaviour
 
     public void OnWordFound(string word)
     {
-        // Find the matching word in wordsToFind (case-insensitive)
         string matchingWord = null;
         foreach (string w in wordsToFind)
         {
@@ -351,7 +340,6 @@ public class WordSearchGrid : MonoBehaviour
             if (SoundManager.Instance != null) SoundManager.Instance.PlayWordFound();
             UpdateWordListUI();
             
-            // Update progress: ratio of found words to total words
             if (GameManager.Instance != null)
             {
                 float progress = (float)foundWords.Count / wordsToFind.Count;
@@ -366,7 +354,6 @@ public class WordSearchGrid : MonoBehaviour
     {
         if (wordListRoot == null || wordItemPrefab == null) return;
 
-        // Clear existing words
         foreach (Transform child in wordListRoot)
         {
             Destroy(child.gameObject);
@@ -381,7 +368,7 @@ public class WordSearchGrid : MonoBehaviour
                 txt.text = word;
                 if (foundWords.Contains(word))
                 {
-                    txt.color = new Color(0.7f, 0.7f, 0.7f, 0.5f); // Greyed out
+                    txt.color = new Color(0.7f, 0.7f, 0.7f, 0.5f); 
                 }
             }
         }
@@ -391,7 +378,7 @@ public class WordSearchGrid : MonoBehaviour
     {
         if (foundWords.Count == wordsToFind.Count)
         {
-            if (GameManager.Instance != null && GameManager.Instance.currentLevelIndex == GameManager.Instance.levels.Count - 1)
+            if (GameManager.Instance != null && GameManager.Instance.CurrentLevelIndex == GameManager.Instance.Levels.Count - 1)
             {
                 ctaPanel.SetActive(true);
             }

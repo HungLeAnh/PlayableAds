@@ -9,30 +9,36 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     
-    public WordSearchGrid grid;
-    public List<LevelData> levels;
-    public int currentLevelIndex = 0;
-    public bool useTimer = true;
-    public float gameDuration = 60f;
-    public TextMeshProUGUI timerText;
-    public Slider progressSlider;
-    public GameObject gameOverPanel;
-    public Image vignetteImage;
-    public PulsatingVignette vignetteEffect;
-    public float vignettePulseSpeed = 4f;
-    public TransitionUI transitionUI;
-    public GamePanelUI resultPanel;
-    public TutorialHandUI tutorialHand;
-    public TutorialTextUI tutorialTextUI;
-    public float idleTimeThreshold = 3f;
+    [SerializeField] private WordSearchGrid grid;
+    [SerializeField] private int currentLevelIndex = 0;
+    [SerializeField] private bool useTimer = true;
+    [SerializeField] private float gameDuration = 60f;
+    [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private Slider progressSlider;
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private Image vignetteImage;
+    [SerializeField] private PulsatingVignette vignetteEffect;
+    [SerializeField] private float vignettePulseSpeed = 4f;
+    [SerializeField] private float idleTimeThreshold = 3f;
+    [SerializeField] private TransitionUI transitionUI;
+    [SerializeField] private GamePanelUI resultPanel;
+    [SerializeField] private TutorialHandUI tutorialHand;
+    [SerializeField] private TutorialTextUI tutorialTextUI;
 
+    private bool isGameActive = true;
     private float timeRemaining;
-    public bool isGameActive = true;
+    private List<LevelData> levels;
     private bool isWinState = false;
     private float lastInteractionTime;
     private bool tutorialActive = false;
     private bool firstInteractionDone = false;
-    
+
+    public bool IsGameActive { get => isGameActive; set => isGameActive = value; }
+    public TutorialTextUI TutorialTextUI { get => tutorialTextUI; set => tutorialTextUI = value; }
+    public TutorialHandUI TutorialHand { get => tutorialHand; set => tutorialHand = value; }
+    public List<LevelData> Levels { get => levels; set => levels = value; }
+    public int CurrentLevelIndex { get => currentLevelIndex; set => currentLevelIndex = value; }
+
     void Awake()
     {
         Instance = this;
@@ -49,11 +55,6 @@ public class GameManager : MonoBehaviour
         {
             vignetteImage.gameObject.SetActive(false);
             vignetteImage.raycastTarget = false; // Ensure it doesn't block input
-        }
-
-        if (transitionUI == null)
-        {
-            CreateTransitionUI();
         }
 
         if (resultPanel != null)
@@ -151,29 +152,6 @@ public class GameManager : MonoBehaviour
             grid.ctaPanel.SetActive(true);
         }
     }
-
-    void CreateTransitionUI()
-    {
-        Canvas canvas = FindObjectOfType<Canvas>();
-        if (canvas == null) return;
-
-        GameObject transitionObj = new GameObject("LevelTransition");
-        transitionObj.transform.SetParent(canvas.transform, false);
-        transitionObj.transform.SetAsLastSibling(); // Ensure it's on top
-        
-        Image img = transitionObj.AddComponent<Image>();
-        img.color = new Color(0, 0, 0, 0); // Start transparent
-        
-        RectTransform rt = img.rectTransform;
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.sizeDelta = Vector2.zero;
-        rt.anchoredPosition = Vector2.zero;
-
-        transitionUI = transitionObj.AddComponent<TransitionUI>();
-        transitionUI.fadeImage = img;
-    }
-
     void InitializeLevels()
     {
         if (levels == null || levels.Count == 0)
@@ -208,7 +186,7 @@ public class GameManager : MonoBehaviour
                 width = commonWidth,
                 height = commonHeight,
                 words = new List<string>(commonWords),
-                timeLimit = 30f // Adjusted for "Hard" but using same words
+                timeLimit = 30f 
             });
         }
     }
@@ -254,7 +232,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Idle check for tutorial
         if (!tutorialActive && Time.time - lastInteractionTime > idleTimeThreshold)
         {
             ShowTutorial();
@@ -263,7 +240,6 @@ public class GameManager : MonoBehaviour
 
     void UpdateVignette()
     {
-        // Red pulse when time is low (<= 6 seconds)
         bool shouldPulse = (timeRemaining <= 6f && timeRemaining > 0);
 
         if (vignetteEffect != null)
@@ -328,14 +304,12 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         
-        // If the result panel is still showing, handle it
         if (resultPanel != null && resultPanel.gameObject.activeSelf)
         {
             OnResultPanelClicked();
         }
         else if (resultPanel == null)
         {
-            // Fallback if no result panel
             if (currentLevelIndex < levels.Count - 1)
             {
                 StartCoroutine(TransitionToNextLevel());
