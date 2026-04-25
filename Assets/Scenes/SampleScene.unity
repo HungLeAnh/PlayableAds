@@ -364,7 +364,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 132759290}
-  levels: []
   currentLevelIndex: 0
   useTimer: 1
   gameDuration: 60
@@ -372,14 +371,13 @@ MonoBehaviour:
   progressSlider: {fileID: 653255774}
   gameOverPanel: {fileID: 1997875086}
   vignetteImage: {fileID: 394314269}
-  vignetteEffect: {fileID: 0}
+  vignetteEffect: {fileID: 394314271}
   vignettePulseSpeed: 3
+  idleTimeThreshold: 3
   transitionUI: {fileID: 1676048597}
   resultPanel: {fileID: 707631225}
   tutorialHand: {fileID: 101657155}
   tutorialTextUI: {fileID: 1883100406}
-  idleTimeThreshold: 3
-  isGameActive: 1
 --- !u!4 &132759288
 Transform:
   m_ObjectHideFlags: 0
@@ -425,13 +423,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridWidth: 6
   gridHeight: 8
-  wordsToFind:
-  - LUNA
-  - PLAYABLE
-  - UNITY
-  - ADS
-  - SEARCH
-  - WORD
   cellPrefab: {fileID: 8220986946515861249, guid: de9fcc97dd9ff764192613aa2333e7a4, type: 3}
   gridRoot: {fileID: 1345851658}
   wordListRoot: {fileID: 31806186}
